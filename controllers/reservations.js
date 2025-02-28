@@ -67,10 +67,9 @@ exports.getReservation = async (req,res,next) => {
 
 exports.addReservation = async (req,res,next) => {
     try{
-        if(req.body.restaurant) req.params.restaurantId = req.body.restaurant;
-        else req.body.restaurant = req.params.restaurantId;
+        req.body.restaurant = req.params.restaurantId;
         const restaurant = await Restaurant.findById(req.params.restaurantId);
-        
+        console.log(req.params.restaurantId );
         if(!restaurant){
             return res.status(404).json({
                 success: false,
@@ -78,41 +77,12 @@ exports.addReservation = async (req,res,next) => {
             });
         }
 
-        const dateReq = new Date(req.body.reserDate);
+        const openTime = new Date(`2021-10-12T${restaurant.open_time}:00`);
+        const closeTime = new Date(`2021-10-12T${restaurant.close_time}:00`);
 
-        if (isNaN(dateReq)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid reservation time"
-            });
-        }
+        const reservationTime = new Date(`2021-10-12T${req.body.time}:00`);
 
-        if(dateReq < Date.now()){
-            return res.status(400).json({
-                success: false,
-                message: "Can't Make Reservation in Past"
-            })
-        }
-
-        
-        const openTime = new Date(dateReq);
-        const closeTime = new Date(dateReq);
-
-        const [openHour, openMinute] = restaurant.open_time.split(":");
-        const [closeHour, closeMinute] = restaurant.close_time.split(":");
-        
-        openTime.setHours(parseInt(openHour), parseInt(openMinute), 0, 0);
-        closeTime.setHours(parseInt(closeHour), parseInt(closeMinute), 0, 0);
-
-        console.log(dateReq + '\n' + openTime + '\n' + closeTime + '\n' + (dateReq >= openTime) + '\n' + (dateReq <= closeTime));
-        if (openHour < closeHour) {
-            if(!(dateReq >= openTime && dateReq <= closeTime))
-            return res.status(400).json({
-                success: false,
-                message: `Reservation time must be between ${restaurant.open_time} and ${restaurant.close_time}`
-            });
-        }else{
-            if(!(dateReq >= openTime || dateReq <= closeTime))
+        if (reservationTime < openTime || reservationTime > closeTime) {
             return res.status(400).json({
                 success: false,
                 message: `Reservation time must be between ${restaurant.open_time} and ${restaurant.close_time}`
@@ -121,14 +91,14 @@ exports.addReservation = async (req,res,next) => {
 
         req.body.user = req.user.id;
         const existedReservations = await Reservation.find({user:req.user.id});
-        
+
         if(existedReservations.length >= 3 && req.user.role !== 'admin'){
             return res.status(400).json({
                 success: false ,
                 message: `The user with ID ${req.user.id} has already made 3 reservations`
             });
         }
-        
+
         const reservation = await Reservation.create(req.body);
         res.status(200).json({
             success: true,
