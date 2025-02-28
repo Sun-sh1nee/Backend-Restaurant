@@ -67,7 +67,6 @@ exports.getRestaurant = async (req, res, next) => {
 
 exports.createRestaurant = async (req, res, next) => {
     try {
-        console.log(req.body);
         const restaurant = await Restaurant.create(req.body);
         res.status(201).json({
             success: true,
