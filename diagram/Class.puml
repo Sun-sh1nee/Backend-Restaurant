@@ -1,0 +1,86 @@
+@startuml
+left to right direction
+package "Restaurant"{
+    class "<<Application>>\nRestaurantService" as RestaurantService{}
+
+    class "<<Resource>>\nrestaurants" as ResourceRestaurants{
+        <<GET>> +getRestaurants():Restaurant
+        <<POST>> +createRestaurant():Restaurant
+    }
+
+    class "<<Resource>>\nrestaurant" as ResourceRestaurant {
+        <<GET>> +getRestaurant(): Restaurant
+        <<PUT>> +updateRestaurant(): Restaurant
+        <<DELETE>> +deleteRestaurant(): void
+    }
+
+    class "<<Representation>>\nRestaurant" as RepresentationRestaurant {
+        -name
+        -address
+        -tel
+        -open_time
+        -close_time
+
+    }
+
+}
+
+package "Reservation"{
+    class "<<Application>>\nReservationService" as ReservationService{}
+
+    class "<<Resource>>\nreservations" as ResourceReservations {
+        <<GET>> +getReservations():Reservation
+        <<POST>> +addReservation():Reservation
+    }
+
+    class "<<Resource>>\nreservation" as ResourceReservation {
+        <<GET>> +getReservation(): Reservation
+        <<PUT>> +updateReservation(): Reservation
+        <<DELETE>> +deleteReservation(): void
+    }
+
+    class "<<Representation>>\nReservation" as RepresentationReservation {
+        -reserDate
+        -user
+        -restaurant
+        -createdAt
+    }
+
+}
+
+package "User"{
+    entity "<<Application>>\nAuthService" as user
+
+
+    class "<<Resourse>>\nauth" as noId{
+        <<POST>> + register(): User
+        <<POST>> + login(): User
+        <<POST>> + logout(): void
+        <<POST>> + getMe(): User
+    }
+
+    class "<<Respresentation>>\nUser" as schema {
+        -name
+        -email
+        -role
+        -password
+        -tel
+        -createdAt
+    }
+}
+
+RestaurantService ..> ResourceRestaurants:"/restaurants\n<<Path>>"
+ResourceRestaurants ..> ResourceRestaurant: "/{restaurantsId}\n<<Path>>"
+ResourceRestaurant ..> RepresentationRestaurant: "<<use>>"
+
+
+ReservationService ..> ResourceReservations:"/reservations\n<<Path>>"
+ResourceReservations ..> ResourceReservation: "/{reservationsId}\n<<Path>>"
+ResourceReservation ..> RepresentationReservation: "<<use>>"
+
+
+
+user ..>  noId : /auth \n <<path>>  
+noId ..>  schema : /auth \n <<use>>
+
+@enduml

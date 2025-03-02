@@ -1,0 +1,79 @@
+@startuml Manage Restaurant (CRUD with Middleware)
+
+header Restaurant Management API
+footer Page %page% of %lastpage%
+title "Manage Restaurant (CRUD Operations) with Middleware"
+
+participant "Client" as client
+participant "<<JavaScript>>\n:Server" as server
+participant "<<Router>>\n:restaurants" as routerRestaurants
+participant "<<Middleware>>\n:AuthMiddleware" as authMiddleware
+participant "<<Middleware>>\n:ValidationMiddleware" as validationMiddleware
+participant "<<Controller>>\n:restaurants" as controllersRestaurants
+participant "<<Model>>\n:Restaurant" as modelRestaurant
+database "<<MongoDB>>\n:RestaurantsDB" as RestaurantsDatabase
+
+== Get All Restaurants (Auth Middleware) ==
+client -> server ++ : req.get('/api/restaurants')
+server -> routerRestaurants ++ : app.use('/api/restaurants', restaurants)
+routerRestaurants -> authMiddleware ++ : authorize()
+authMiddleware -> routerRestaurants -- : next() 
+routerRestaurants -> controllersRestaurants ++ : router.get('/',getRestaurants)
+controllersRestaurants -> modelRestaurant ++ : getRestaurants()
+modelRestaurant -> RestaurantsDatabase ++ :  RestaurantsSchema
+RestaurantsDatabase --> modelRestaurant -- : restaurants
+controllersRestaurants <-- modelRestaurant -- : restaurants
+controllersRestaurants -> client -- : response 
+
+== Get Restaurant by ID (Auth Middleware) ==
+client -> server ++ : req.get('/api/restaurants/:id')
+server -> routerRestaurants ++ : app.use('/api/restaurants/:id', restaurants)
+routerRestaurants -> authMiddleware ++ : authorize()
+authMiddleware -> routerRestaurants -- : next() 
+routerRestaurants -> controllersRestaurants ++ :router.get('/:id',getRestaurant) 
+controllersRestaurants -> modelRestaurant ++ : getRestaurant(req.params.id)
+modelRestaurant -> RestaurantsDatabase ++ : RestaurantsSchema
+RestaurantsDatabase --> modelRestaurant -- : restaurant
+controllersRestaurants <-- modelRestaurant -- : restaurant
+controllersRestaurants -> client -- : response 
+
+== Create New Restaurant (Auth + Validation Middleware) ==
+client -> server ++ : req.post('/api/restaurants', body)
+server -> routerRestaurants ++ : app.use('/api/restaurants', restaurants)
+routerRestaurants -> authMiddleware ++ : authorize()
+authMiddleware -> validationMiddleware ++ : authorize('admin')
+validationMiddleware -> routerRestaurants -- : next() 
+routerRestaurants -> controllersRestaurants ++ : router.post('/',createRestaurant)
+controllersRestaurants -> modelRestaurant ++ : createRestaurant(req.body)
+modelRestaurant -> RestaurantsDatabase ++ : RestaurantsSchema
+RestaurantsDatabase --> modelRestaurant -- : restaurant
+controllersRestaurants <-- modelRestaurant -- : restaurant
+controllersRestaurants -> client -- : response 
+
+== Update Restaurant (Auth + Validation Middleware) ==
+client -> server ++ : req.put('/api/restaurants/:id', body)
+server -> routerRestaurants ++ : app.use('/api/restaurants/:id', restaurants)
+routerRestaurants -> authMiddleware ++ : authorize()
+authMiddleware -> validationMiddleware ++ : authorize('admin')
+validationMiddleware -> routerRestaurants -- : next() 
+routerRestaurants -> controllersRestaurants ++ : router.post('/:id',updateRestaurant)
+controllersRestaurants -> modelRestaurant ++ : updateRestaurant(req.body)
+modelRestaurant -> RestaurantsDatabase ++ : RestaurantsSchema
+RestaurantsDatabase --> modelRestaurant -- : restaurant
+controllersRestaurants <-- modelRestaurant -- : restaurant
+controllersRestaurants -> client -- : response 
+
+== Delete Restaurant (Auth Middleware) ==
+client -> server ++ : req.delete('/api/restaurants/:id')
+server -> routerRestaurants ++ : app.use('/api/restaurants/:id', restaurants)
+routerRestaurants -> authMiddleware ++ : authorize()
+authMiddleware -> validationMiddleware ++ : authorize('admin')
+validationMiddleware -> routerRestaurants -- : next()
+routerRestaurants -> controllersRestaurants ++ : router.delete('/:id',deleteRestaurant)
+controllersRestaurants -> modelRestaurant ++ : deleteRestaurant(req.params.id)
+modelRestaurant -> RestaurantsDatabase ++ : RestaurantsSchema
+RestaurantsDatabase --> modelRestaurant -- : Deletion confirmation
+controllersRestaurants <-- modelRestaurant -- : deletion success
+controllersRestaurants -> client -- : response 
+
+@enduml

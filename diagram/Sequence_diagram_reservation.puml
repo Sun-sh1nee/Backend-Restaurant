@@ -6,17 +6,17 @@ title "Manage Reservation (CRUD Operations)"
 
 participant "Client" as client
 participant "<<JavaScript>>\n:Server" as server
-participant "<<Router>>\n:Reservation" as routerReservation
+participant "<<Router>>\n:reservation" as routerReservation
 participant "<<Middleware>>\n:AuthMiddleware" as authMiddleware
 participant "<<Middleware>>\n:ValidationMiddleware" as validationMiddleware
-participant "<<Controller>>\n:Reservations" as controllersReservation
-participant "<<Model>>\n:Reservations" as modelReservation
+participant "<<Controller>>\n:reservations" as controllersReservation
+participant "<<Model>>\n:Reservation" as modelReservation
 database "<<MongoDB>>\n:ReservationsDB" as ReservationsDatabase
 
 == Get All Reservations  ==
 client -> server ++ : req.get('/api/reservations')
 server -> routerReservation ++ : app.use('/api/reservations', reservations)
-routerReservation -> authMiddleware ++ : authenticate
+routerReservation -> authMiddleware ++ : authorize()
 authMiddleware -> routerReservation -- : next() 
 routerReservation -> controllersReservation ++ : router.get('/',getReservations)
 controllersReservation -> modelReservation ++ : getReservations()
@@ -28,7 +28,7 @@ controllersReservation -> client -- : response
 == Get Reservation by ID  ==
 client -> server ++ : req.get('/api/reservations/:id')
 server -> routerReservation ++ : app.use('/api/reservations/:id', reservations)
-routerReservation -> authMiddleware ++ : authenticate
+routerReservation -> authMiddleware ++ : authorize()
 authMiddleware -> routerReservation -- : next() 
 routerReservation -> controllersReservation ++ :router.get('/:id',getReservation) 
 controllersReservation -> modelReservation ++ : getReservation(req.params.id)
@@ -40,7 +40,7 @@ controllersReservation -> client -- : response
 == Create New Reservation  ==
 client -> server ++ : req.post('/api/reservations', body)
 server -> routerReservation ++ : app.use('/api/reservations', reservations)
-routerReservation -> authMiddleware ++ : authenticate
+routerReservation -> authMiddleware ++ : authorize()
 authMiddleware -> validationMiddleware ++ : authorize('admin','user')
 validationMiddleware -> routerReservation -- : next() 
 routerReservation -> controllersReservation ++ : router.post('/',createReservation)
@@ -53,7 +53,7 @@ controllersReservation -> client -- : response
 == Update Reservation  ==
 client -> server ++ : req.put('/api/reservations/:id', body)
 server -> routerReservation ++ : app.use('/api/reservations/:id', reservations)
-routerReservation -> authMiddleware ++ : authenticate
+routerReservation -> authMiddleware ++ : authorize()
 authMiddleware -> validationMiddleware ++ : authorize('admin','user')
 validationMiddleware -> routerReservation -- : next() 
 routerReservation -> controllersReservation ++ : router.post('/:id',updateReservation)
@@ -66,7 +66,7 @@ controllersReservation -> client -- : response
 == Delete Reservation  ==
 client -> server ++ : req.delete('/api/reservations/:id')
 server -> routerReservation ++ : app.use('/api/reservations/:id', reservations)
-routerReservation -> authMiddleware ++ : authenticate
+routerReservation -> authMiddleware ++ : authorize()
 authMiddleware -> validationMiddleware ++ : authorize('admin','user')
 validationMiddleware -> routerReservation -- : next()
 routerReservation -> controllersReservation ++ : router.delete('/:id',deleteReservation)

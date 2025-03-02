@@ -19,3 +19,5 @@ user -- manageReservation
 register -- admin
 manageReservation -- admin
 manageRestaurant -- admin
+
+@enduml

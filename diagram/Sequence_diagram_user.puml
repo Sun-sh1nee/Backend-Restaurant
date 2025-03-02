@@ -1,0 +1,67 @@
+@startuml Manage Auth (CRUD)
+
+header Auth Management API
+footer Page %page% of %lastpage%
+title "Manage Auth (CRUD Operations)"
+
+participant "Client" as client
+participant "<<JavaScript>>\n:Server" as server
+participant "<<Router>>\n:auth" as routerAuth
+participant "<<Middleware>>\n:AuthMiddleware" as authMiddleware
+participant "<<Middleware>>\n:ValidationMiddleware" as validationMiddleware
+participant "<<Controller>>\n:auth" as controllersAuth
+participant "<<Model>>\n:User" as modelUser
+database "<<MongoDB>>\n:AuthsDB" as AuthsDatabase
+
+== Register  ==
+client -> server ++ : req.post('/api/auth', body)
+server -> routerAuth ++ : app.use('/api/auth', auth)
+routerAuth -> authMiddleware ++ : authorize()
+authMiddleware -> routerAuth -- : next() 
+routerAuth -> controllersAuth ++ : router.post('/',register)
+controllersAuth -> modelAuth ++ : register(req.body)
+modelAuth -> AuthsDatabase ++ :  UserSchema
+AuthsDatabase --> modelAuth -- : auth
+controllersAuth <-- modelAuth -- : auth
+controllersAuth -> client -- : response 
+
+== Login  ==
+client -> server ++ : req.post('/api/auth/:id', body)
+server -> routerAuth ++ : app.use('/api/auth/:id', auth)
+routerAuth -> authMiddleware ++ : authorize()
+authMiddleware -> routerAuth -- : next() 
+routerAuth -> controllersAuth ++ :router.post('/:id',login) 
+controllersAuth -> modelAuth ++ : login(req.body)
+modelAuth -> AuthsDatabase ++ : UserSchema
+AuthsDatabase --> modelAuth -- : auth
+controllersAuth <-- modelAuth -- : auth
+controllersAuth -> client -- : response 
+
+== Logout  ==
+client -> server ++ : req.post('/api/auth')
+server -> routerAuth ++ : app.use('/api/auth', auth)
+routerAuth -> authMiddleware ++ : authorize()
+authMiddleware -> validationMiddleware ++ : authorize('admin','user')
+validationMiddleware -> routerAuth -- : next() 
+routerAuth -> controllersAuth ++ : router.post('/',logout)
+controllersAuth -> modelAuth ++ : logout()
+modelAuth -> AuthsDatabase ++ : UserSchema
+AuthsDatabase --> modelAuth -- : auth
+controllersAuth <-- modelAuth -- : auth
+controllersAuth -> client -- : response 
+
+== Get Me ==
+client -> server ++ : req.get('/api/auth/:id')
+server -> routerAuth ++ : app.use('/api/auth/:id', auth)
+routerAuth -> authMiddleware ++ : authorize()
+authMiddleware -> validationMiddleware ++ : authorize('admin','user')
+validationMiddleware -> routerAuth -- : next() 
+routerAuth -> controllersAuth ++ : router.get('/:id',getMe)
+controllersAuth -> modelAuth ++ : getMe(req.user.id)
+modelAuth -> AuthsDatabase ++ : UserSchema
+AuthsDatabase --> modelAuth -- : auth
+controllersAuth <-- modelAuth -- : auth
+controllersAuth -> client -- : response 
+
+
+@enduml
