@@ -41,7 +41,7 @@ exports.addComment = async (req,res,next) => {
 
         req.body.user = req.user.id;
         const comment = await Comment.create(req.body);
-        res.status(200).json({
+        res.status(201).json({
             success: true,
             data: comment
         });
@@ -49,7 +49,7 @@ exports.addComment = async (req,res,next) => {
         // console.log(error);
         return res.status(500).json({
             success: false,
-            message: "Cannot create Commnet"
+            message: "Cannot create Comment"
         });
     }
 }

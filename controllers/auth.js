@@ -17,7 +17,7 @@ exports.register = async (req, res, next) => {
             role
         });
         
-        sendTokenResponse(user, 200, res);
+        sendTokenResponse(user, 201, res);
         
     } catch (error) {
         res.status(400).json({ success: false, msg: 'Error creating user', error: error.message });
@@ -76,6 +76,6 @@ exports.getMe = async (req, res, next) => {
         const user = await User.findById(req.user.id);
         res.status(200).json({ success: true, data: user });
     } catch (error) {
-        res.status(400).json({ success: false, msg: 'Error retrieving user', error: error.message });
+        res.status(404).json({ success: false, msg: 'Error retrieving user', error: error.message });
     }
 };
