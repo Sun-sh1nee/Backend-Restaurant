@@ -1,55 +1,79 @@
-@startuml Authentication API
+@startuml Manage Reservation
 
-header Authentication API
+header Reservation Management API
 footer Page %page% of %lastpage%
-title "User Authentication"
+title "Manage Reservation"
 
 participant "Client" as client
 participant "<<JavaScript>>\n:Server" as server
-participant "<<Router>>\n:auth" as routerAuth
-participant "<<Middleware>>\n:AuthMiddleware (protect)" as authMiddleware
-participant "<<Controller>>\n:auth" as controllersAuth
-participant "<<Model>>\n:User" as modelUser
-database "<<MongoDB>>\n:UsersDB" as UsersDatabase
+participant "<<Router>>\n:reservation" as routerReservation
+participant "<<Middleware>>\n:AuthMiddleware" as authMiddleware
+participant "<<Middleware>>\n:ValidationMiddleware" as validationMiddleware
+participant "<<Controller>>\n:reservations" as controllersReservation
+participant "<<Model>>\n:Reservation" as modelReservation
+database "<<MongoDB>>\n:ReservationsDB" as ReservationsDatabase
 
-== User Registration ==
-client -> server ++ : req.post('/api/auth/register', body)
-server -> routerAuth ++ : app.use('/api/auth', auth)
-routerAuth -> controllersAuth ++ : router.post('/register', register)
-controllersAuth -> modelUser ++ : createUser(req.body)
-modelUser -> UsersDatabase ++ : Insert user data
-UsersDatabase --> modelUser -- : new user object
-controllersAuth <-- modelUser -- : user
-controllersAuth -> client -- : response (success, token)
+== Get All Reservations ==
+client -> server ++ : req.get('/api/reservations')
+server -> routerReservation ++ : app.use('/api/reservations', reservations)
+routerReservation -> authMiddleware ++ : authorize()
+authMiddleware -> routerReservation -- : next() 
+routerReservation -> controllersReservation ++ : router.get('/',getReservations)
+controllersReservation -> modelReservation ++ : getReservations()
+modelReservation -> ReservationsDatabase ++ : reservationsSchema
+ReservationsDatabase --> modelReservation -- : reservations
+controllersReservation <-- modelReservation -- : reservations
+controllersReservation -> client -- : response 
 
-== User Login ==
-client -> server ++ : req.post('/api/auth/login', credentials)
-server -> routerAuth ++ : app.use('/api/auth', auth)
-routerAuth -> controllersAuth ++ : router.post('/login', login)
-controllersAuth -> modelUser ++ : authenticateUser(req.body)
-modelUser -> UsersDatabase ++ : Find user by email
-UsersDatabase --> modelUser -- : user data
-controllersAuth <-- modelUser -- : token
-controllersAuth -> client -- : response (token, user info)
+== Get Reservation by ID ==
+client -> server ++ : req.get('/api/reservations/:id')
+server -> routerReservation ++ : app.use('/api/reservations/:id', reservations)
+routerReservation -> authMiddleware ++ : authorize()
+authMiddleware -> routerReservation -- : next() 
+routerReservation -> controllersReservation ++ : router.get('/:id',getReservation) 
+controllersReservation -> modelReservation ++ : getReservation(req.params.id)
+modelReservation -> ReservationsDatabase ++ : reservationsSchema
+ReservationsDatabase --> modelReservation -- : reservation
+controllersReservation <-- modelReservation -- : reservation
+controllersReservation -> client -- : response 
 
-== User Logout ==
-client -> server ++ : req.post('/api/auth/logout')
-server -> routerAuth ++ : app.use('/api/auth', auth)
-routerAuth -> authMiddleware ++ : protect()
-authMiddleware -> routerAuth -- : next()
-routerAuth -> controllersAuth ++ : router.post('/logout', logout)
-controllersAuth -> client -- : response (success message)
+== Create New Reservation ==
+client -> server ++ : req.post('/api/reservations', body)
+server -> routerReservation ++ : app.use('/api/reservations', reservations)
+routerReservation -> authMiddleware ++ : authorize()
+authMiddleware -> validationMiddleware ++ : validateReservation()
+validationMiddleware -> routerReservation -- : next() 
+routerReservation -> controllersReservation ++ : router.post('/',createReservation)
+controllersReservation -> modelReservation ++ : createReservation(req.body)
+modelReservation -> ReservationsDatabase ++ : reservationsSchema
+ReservationsDatabase --> modelReservation -- : reservation
+controllersReservation <-- modelReservation -- : reservation
+controllersReservation -> client -- : response 
 
-== Get Current User ==
-client -> server ++ : req.get('/api/auth/me')
-server -> routerAuth ++ : app.use('/api/auth', auth)
-routerAuth -> authMiddleware ++ : protect()
-authMiddleware -> routerAuth -- : next()
-routerAuth -> controllersAuth ++ : router.get('/me', getMe)
-controllersAuth -> modelUser ++ : getUserById(req.user.id)
-modelUser -> UsersDatabase ++ : Find user by ID
-UsersDatabase --> modelUser -- : user data
-controllersAuth <-- modelUser -- : user object
-controllersAuth -> client -- : response (user info)
+== Update Reservation ==
+client -> server ++ : req.put('/api/reservations/:id', body)
+server -> routerReservation ++ : app.use('/api/reservations/:id', reservations)
+routerReservation -> authMiddleware ++ : authorize()
+authMiddleware -> validationMiddleware ++ : validateReservation()
+validationMiddleware -> routerReservation -- : next() 
+routerReservation -> controllersReservation ++ : router.put('/:id',updateReservation)
+controllersReservation -> modelReservation ++ : updateReservation(req.params.id, req.body)
+modelReservation -> ReservationsDatabase ++ : reservationsSchema
+ReservationsDatabase --> modelReservation -- : reservation
+controllersReservation <-- modelReservation -- : reservation
+controllersReservation -> client -- : response 
+
+== Delete Reservation ==
+client -> server ++ : req.delete('/api/reservations/:id')
+server -> routerReservation ++ : app.use('/api/reservations/:id', reservations)
+routerReservation -> authMiddleware ++ : authorize()
+authMiddleware -> validationMiddleware ++ : authorize('admin')
+validationMiddleware -> routerReservation -- : next()
+routerReservation -> controllersReservation ++ : router.delete('/:id',deleteReservation)
+controllersReservation -> modelReservation ++ : deleteReservation(req.params.id)
+modelReservation -> ReservationsDatabase ++ : reservationsSchema
+ReservationsDatabase --> modelReservation -- : Deletion confirmation
+controllersReservation <-- modelReservation -- : deletion success
+controllersReservation -> client -- : response 
 
 @enduml
