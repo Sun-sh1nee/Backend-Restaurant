@@ -5,19 +5,39 @@ left to right direction
 actor "User" as user
 actor "Admin" as admin
 
-rectangle "Restaurant System" as ResSystem {
+rectangle "Auth System" as authSystem {
+    usecase "Login" as login
     usecase "Register" as register
+    usecase "Get Me" as getme
+    usecase "Logout" as logout
+}
+
+rectangle "Restaurant System" as ResSystem {
     usecase "View\nRestaurants" as viewRestaurant
-    usecase "Manage\nReservation" as manageReservation
     usecase "Manage\nRestaurant" as manageRestaurant
 }
 
-user -- register
-user -- viewRestaurant
-user -- manageReservation
+rectangle "Reservations System" as reserSystem {
+    usecase "Manage\nOwn Reservation" as manageOwnReservation
+    usecase "Manage\nAll Reservation" as manageAllReservation
+}
 
+
+user -- login
+user -- register
+user -- getme
+user -- logout
+login -- admin
 register -- admin
-manageReservation -- admin
+getme -- admin
+logout -- admin
+
+user -- viewRestaurant
 manageRestaurant -- admin
+viewRestaurant -- admin
+
+user -- manageOwnReservation
+manageAllReservation -- admin
+
 
 @enduml

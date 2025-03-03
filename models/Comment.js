@@ -20,4 +20,5 @@ const CommentSchema = new mongoose.Schema({
         default: Date.now
     }
 });
+
 module.exports = mongoose.model('Comment',CommentSchema);

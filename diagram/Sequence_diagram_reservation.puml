@@ -1,75 +1,77 @@
-@startuml Manage Reservation (CRUD)
+@startuml Manage Reservation
 
 header Reservation Management API
 footer Page %page% of %lastpage%
-title "Manage Reservation (CRUD Operations)"
+title "Manage Reservation"
 
 participant "Client" as client
 participant "<<JavaScript>>\n:Server" as server
-participant "<<Router>>\n:reservation" as routerReservation
-participant "<<Middleware>>\n:AuthMiddleware" as authMiddleware
-participant "<<Middleware>>\n:ValidationMiddleware" as validationMiddleware
+participant "<<Router>>\n:reservations" as routerReservation
+participant "<<Middleware>>\n:AuthMiddleware (protect, authorize)" as authMiddleware
 participant "<<Controller>>\n:reservations" as controllersReservation
 participant "<<Model>>\n:Reservation" as modelReservation
 database "<<MongoDB>>\n:ReservationsDB" as ReservationsDatabase
 
-== Get All Reservations  ==
+== Get All Reservations ==
 client -> server ++ : req.get('/api/reservations')
 server -> routerReservation ++ : app.use('/api/reservations', reservations)
-routerReservation -> authMiddleware ++ : authorize()
+routerReservation -> authMiddleware ++ : protect()   
 authMiddleware -> routerReservation -- : next() 
-routerReservation -> controllersReservation ++ : router.get('/',getReservations)
+routerReservation -> controllersReservation ++ : router.get('/', getReservations)
 controllersReservation -> modelReservation ++ : getReservations()
-modelReservation -> ReservationsDatabase ++ :  reservationsSchema
-ReservationsDatabase --> modelReservation -- : reservations
+modelReservation -> ReservationsDatabase ++ : reservationsSchema
+RestaurantsDatabase --> modelReservation -- : reservations
 controllersReservation <-- modelReservation -- : reservations
 controllersReservation -> client -- : response 
 
-== Get Reservation by ID  ==
+== Get Reservation by ID (Protected) ==
 client -> server ++ : req.get('/api/reservations/:id')
 server -> routerReservation ++ : app.use('/api/reservations/:id', reservations)
-routerReservation -> authMiddleware ++ : authorize()
+routerReservation -> authMiddleware ++ : protect() 
 authMiddleware -> routerReservation -- : next() 
-routerReservation -> controllersReservation ++ :router.get('/:id',getReservation) 
+routerReservation -> controllersReservation ++ : router.get('/:id', getReservation) 
 controllersReservation -> modelReservation ++ : getReservation(req.params.id)
 modelReservation -> ReservationsDatabase ++ : reservationsSchema
-ReservationsDatabase --> modelReservation -- : reservation
+RestaurantsDatabase --> modelReservation -- : reservation
 controllersReservation <-- modelReservation -- : reservation
 controllersReservation -> client -- : response 
 
-== Create New Reservation  ==
+== Create New Reservation (User/Admin Only) ==
 client -> server ++ : req.post('/api/reservations', body)
 server -> routerReservation ++ : app.use('/api/reservations', reservations)
-routerReservation -> authMiddleware ++ : authorize()
-authMiddleware -> validationMiddleware ++ : authorize('admin','user')
-validationMiddleware -> routerReservation -- : next() 
-routerReservation -> controllersReservation ++ : router.post('/',createReservation)
-controllersReservation -> modelReservation ++ : createReservation(req.body)
+routerReservation -> authMiddleware ++ : protect()   
+authMiddleware -> routerReservation -- : next()
+routerReservation -> authMiddleware ++ : authorize('admin', 'user')
+authMiddleware -> routerReservation -- : next()  
+routerReservation -> controllersReservation ++ : router.post('/', addReservation)
+controllersReservation -> modelReservation ++ : addReservation(req.body)
 modelReservation -> ReservationsDatabase ++ : reservationsSchema
 ReservationsDatabase --> modelReservation -- : reservation
 controllersReservation <-- modelReservation -- : reservation
 controllersReservation -> client -- : response 
 
-== Update Reservation  ==
+== Update Reservation (User/Admin Only) ==
 client -> server ++ : req.put('/api/reservations/:id', body)
 server -> routerReservation ++ : app.use('/api/reservations/:id', reservations)
-routerReservation -> authMiddleware ++ : authorize()
-authMiddleware -> validationMiddleware ++ : authorize('admin','user')
-validationMiddleware -> routerReservation -- : next() 
-routerReservation -> controllersReservation ++ : router.post('/:id',updateReservation)
-controllersReservation -> modelReservation ++ : updateReservation(req.body)
+routerReservation -> authMiddleware ++ : protect()  
+authMiddleware -> routerReservation -- : next()
+routerReservation -> authMiddleware ++ : authorize('admin', 'user')
+authMiddleware -> routerReservation -- :next()  
+routerReservation -> controllersReservation ++ : router.put('/:id', updateReservation)
+controllersReservation -> modelReservation ++ : updateReservation(req.params.id, req.body)
 modelReservation -> ReservationsDatabase ++ : reservationsSchema
-ReservationsDatabase --> modelReservation -- : reservation
+ReservationsDatabase --> modelReservation -- : updated reservation
 controllersReservation <-- modelReservation -- : reservation
 controllersReservation -> client -- : response 
 
-== Delete Reservation  ==
+== Delete Reservation (User/Admin Only) ==
 client -> server ++ : req.delete('/api/reservations/:id')
 server -> routerReservation ++ : app.use('/api/reservations/:id', reservations)
-routerReservation -> authMiddleware ++ : authorize()
-authMiddleware -> validationMiddleware ++ : authorize('admin','user')
-validationMiddleware -> routerReservation -- : next()
-routerReservation -> controllersReservation ++ : router.delete('/:id',deleteReservation)
+routerReservation -> authMiddleware ++ : protect()  
+authMiddleware -> routerReservation -- : next()
+routerReservation -> authMiddleware ++ : authorize('admin', 'user')
+authMiddleware -> routerReservation -- : next()
+routerReservation -> controllersReservation ++ : router.delete('/:id', deleteReservation)
 controllersReservation -> modelReservation ++ : deleteReservation(req.params.id)
 modelReservation -> ReservationsDatabase ++ : reservationsSchema
 ReservationsDatabase --> modelReservation -- : Deletion confirmation

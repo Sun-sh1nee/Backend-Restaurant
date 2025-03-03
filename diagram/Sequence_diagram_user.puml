@@ -1,67 +1,55 @@
-@startuml Manage Auth (CRUD)
+@startuml Authentication API
 
-header Auth Management API
+header Authentication API
 footer Page %page% of %lastpage%
-title "Manage Auth (CRUD Operations)"
+title "User Authentication"
 
 participant "Client" as client
 participant "<<JavaScript>>\n:Server" as server
 participant "<<Router>>\n:auth" as routerAuth
-participant "<<Middleware>>\n:AuthMiddleware" as authMiddleware
-participant "<<Middleware>>\n:ValidationMiddleware" as validationMiddleware
+participant "<<Middleware>>\n:AuthMiddleware (protect)" as authMiddleware
 participant "<<Controller>>\n:auth" as controllersAuth
 participant "<<Model>>\n:User" as modelUser
-database "<<MongoDB>>\n:AuthsDB" as AuthsDatabase
+database "<<MongoDB>>\n:UsersDB" as UsersDatabase
 
-== Register  ==
-client -> server ++ : req.post('/api/auth', body)
+== User Registration ==
+client -> server ++ : req.post('/api/auth/register', body)
 server -> routerAuth ++ : app.use('/api/auth', auth)
-routerAuth -> authMiddleware ++ : authorize()
-authMiddleware -> routerAuth -- : next() 
-routerAuth -> controllersAuth ++ : router.post('/',register)
-controllersAuth -> modelAuth ++ : register(req.body)
-modelAuth -> AuthsDatabase ++ :  UserSchema
-AuthsDatabase --> modelAuth -- : auth
-controllersAuth <-- modelAuth -- : auth
-controllersAuth -> client -- : response 
+routerAuth -> controllersAuth ++ : router.post('/register', register)
+controllersAuth -> modelUser ++ : createUser(req.body)
+modelUser -> UsersDatabase ++ : Insert user data
+UsersDatabase --> modelUser -- : new user object
+controllersAuth <-- modelUser -- : user
+controllersAuth -> client -- : response (success, token)
 
-== Login  ==
-client -> server ++ : req.post('/api/auth/:id', body)
-server -> routerAuth ++ : app.use('/api/auth/:id', auth)
-routerAuth -> authMiddleware ++ : authorize()
-authMiddleware -> routerAuth -- : next() 
-routerAuth -> controllersAuth ++ :router.post('/:id',login) 
-controllersAuth -> modelAuth ++ : login(req.body)
-modelAuth -> AuthsDatabase ++ : UserSchema
-AuthsDatabase --> modelAuth -- : auth
-controllersAuth <-- modelAuth -- : auth
-controllersAuth -> client -- : response 
-
-== Logout  ==
-client -> server ++ : req.post('/api/auth')
+== User Login ==
+client -> server ++ : req.post('/api/auth/login', credentials)
 server -> routerAuth ++ : app.use('/api/auth', auth)
-routerAuth -> authMiddleware ++ : authorize()
-authMiddleware -> validationMiddleware ++ : authorize('admin','user')
-validationMiddleware -> routerAuth -- : next() 
-routerAuth -> controllersAuth ++ : router.post('/',logout)
-controllersAuth -> modelAuth ++ : logout()
-modelAuth -> AuthsDatabase ++ : UserSchema
-AuthsDatabase --> modelAuth -- : auth
-controllersAuth <-- modelAuth -- : auth
-controllersAuth -> client -- : response 
+routerAuth -> controllersAuth ++ : router.post('/login', login)
+controllersAuth -> modelUser ++ : authenticateUser(req.body)
+modelUser -> UsersDatabase ++ : Find user by email
+UsersDatabase --> modelUser -- : user data
+controllersAuth <-- modelUser -- : token
+controllersAuth -> client -- : response (token, user info)
 
-== Get Me ==
-client -> server ++ : req.get('/api/auth/:id')
-server -> routerAuth ++ : app.use('/api/auth/:id', auth)
-routerAuth -> authMiddleware ++ : authorize()
-authMiddleware -> validationMiddleware ++ : authorize('admin','user')
-validationMiddleware -> routerAuth -- : next() 
-routerAuth -> controllersAuth ++ : router.get('/:id',getMe)
-controllersAuth -> modelAuth ++ : getMe(req.user.id)
-modelAuth -> AuthsDatabase ++ : UserSchema
-AuthsDatabase --> modelAuth -- : auth
-controllersAuth <-- modelAuth -- : auth
-controllersAuth -> client -- : response 
+== User Logout ==
+client -> server ++ : req.post('/api/auth/logout')
+server -> routerAuth ++ : app.use('/api/auth', auth)
+routerAuth -> authMiddleware ++ : protect()
+authMiddleware -> routerAuth -- : next()
+routerAuth -> controllersAuth ++ : router.post('/logout', logout)
+controllersAuth -> client -- : response (success message)
 
+== Get Current User ==
+client -> server ++ : req.get('/api/auth/me')
+server -> routerAuth ++ : app.use('/api/auth', auth)
+routerAuth -> authMiddleware ++ : protect()
+authMiddleware -> routerAuth -- : next()
+routerAuth -> controllersAuth ++ : router.get('/me', getMe)
+controllersAuth -> modelUser ++ : getUserById(req.user.id)
+modelUser -> UsersDatabase ++ : Find user by ID
+UsersDatabase --> modelUser -- : user data
+controllersAuth <-- modelUser -- : user object
+controllersAuth -> client -- : response (user info)
 
 @enduml

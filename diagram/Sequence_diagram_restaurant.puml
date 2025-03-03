@@ -1,75 +1,73 @@
-@startuml Manage Restaurant (CRUD with Middleware)
+@startuml Manage Restaurant
 
 header Restaurant Management API
 footer Page %page% of %lastpage%
-title "Manage Restaurant (CRUD Operations) with Middleware"
+title "Manage Restaurant"
 
 participant "Client" as client
 participant "<<JavaScript>>\n:Server" as server
 participant "<<Router>>\n:restaurants" as routerRestaurants
-participant "<<Middleware>>\n:AuthMiddleware" as authMiddleware
-participant "<<Middleware>>\n:ValidationMiddleware" as validationMiddleware
+participant "<<Middleware>>\n:AuthMiddleware (protect, authorize)" as authMiddleware
 participant "<<Controller>>\n:restaurants" as controllersRestaurants
 participant "<<Model>>\n:Restaurant" as modelRestaurant
 database "<<MongoDB>>\n:RestaurantsDB" as RestaurantsDatabase
 
-== Get All Restaurants (Auth Middleware) ==
+== Get All Restaurants ==
 client -> server ++ : req.get('/api/restaurants')
 server -> routerRestaurants ++ : app.use('/api/restaurants', restaurants)
-routerRestaurants -> authMiddleware ++ : authorize()
-authMiddleware -> routerRestaurants -- : next() 
-routerRestaurants -> controllersRestaurants ++ : router.get('/',getRestaurants)
+routerRestaurants -> controllersRestaurants ++ : router.get('/', getRestaurants)
 controllersRestaurants -> modelRestaurant ++ : getRestaurants()
-modelRestaurant -> RestaurantsDatabase ++ :  RestaurantsSchema
+modelRestaurant -> RestaurantsDatabase ++ : RestaurantsSchema
 RestaurantsDatabase --> modelRestaurant -- : restaurants
 controllersRestaurants <-- modelRestaurant -- : restaurants
 controllersRestaurants -> client -- : response 
 
-== Get Restaurant by ID (Auth Middleware) ==
+== Get Restaurant by ID ==
 client -> server ++ : req.get('/api/restaurants/:id')
 server -> routerRestaurants ++ : app.use('/api/restaurants/:id', restaurants)
-routerRestaurants -> authMiddleware ++ : authorize()
-authMiddleware -> routerRestaurants -- : next() 
-routerRestaurants -> controllersRestaurants ++ :router.get('/:id',getRestaurant) 
+routerRestaurants -> controllersRestaurants ++ : router.get('/:id', getRestaurant) 
 controllersRestaurants -> modelRestaurant ++ : getRestaurant(req.params.id)
 modelRestaurant -> RestaurantsDatabase ++ : RestaurantsSchema
 RestaurantsDatabase --> modelRestaurant -- : restaurant
 controllersRestaurants <-- modelRestaurant -- : restaurant
 controllersRestaurants -> client -- : response 
 
-== Create New Restaurant (Auth + Validation Middleware) ==
+== Create New Restaurant ==
 client -> server ++ : req.post('/api/restaurants', body)
 server -> routerRestaurants ++ : app.use('/api/restaurants', restaurants)
-routerRestaurants -> authMiddleware ++ : authorize()
-authMiddleware -> validationMiddleware ++ : authorize('admin')
-validationMiddleware -> routerRestaurants -- : next() 
-routerRestaurants -> controllersRestaurants ++ : router.post('/',createRestaurant)
+routerRestaurants -> authMiddleware ++ : protect()
+authMiddleware -> routerRestaurants -- : next() 
+routerRestaurants -> authMiddleware ++ : authorize('admin')
+authMiddleware -> routerRestaurants -- : next()
+routerRestaurants -> controllersRestaurants ++ : router.post('/', createRestaurant)
 controllersRestaurants -> modelRestaurant ++ : createRestaurant(req.body)
 modelRestaurant -> RestaurantsDatabase ++ : RestaurantsSchema
-RestaurantsDatabase --> modelRestaurant -- : restaurant
+RestaurantsDatabase --> modelRestaurant -- : new restaurant data
 controllersRestaurants <-- modelRestaurant -- : restaurant
 controllersRestaurants -> client -- : response 
 
-== Update Restaurant (Auth + Validation Middleware) ==
+== Update Restaurant ==
 client -> server ++ : req.put('/api/restaurants/:id', body)
 server -> routerRestaurants ++ : app.use('/api/restaurants/:id', restaurants)
-routerRestaurants -> authMiddleware ++ : authorize()
-authMiddleware -> validationMiddleware ++ : authorize('admin')
-validationMiddleware -> routerRestaurants -- : next() 
-routerRestaurants -> controllersRestaurants ++ : router.post('/:id',updateRestaurant)
+routerRestaurants -> authMiddleware ++ : protect()
+authMiddleware -> routerRestaurants -- : next() 
+routerRestaurants -> authMiddleware ++ : authorize('admin')
+authMiddleware -> routerRestaurants -- : next()
+routerRestaurants -> controllersRestaurants ++ : router.put('/:id', updateRestaurant)
 controllersRestaurants -> modelRestaurant ++ : updateRestaurant(req.body)
 modelRestaurant -> RestaurantsDatabase ++ : RestaurantsSchema
-RestaurantsDatabase --> modelRestaurant -- : restaurant
+RestaurantsDatabase --> modelRestaurant -- : updated restaurant
 controllersRestaurants <-- modelRestaurant -- : restaurant
 controllersRestaurants -> client -- : response 
 
-== Delete Restaurant (Auth Middleware) ==
+== Delete Restaurant ==
 client -> server ++ : req.delete('/api/restaurants/:id')
 server -> routerRestaurants ++ : app.use('/api/restaurants/:id', restaurants)
-routerRestaurants -> authMiddleware ++ : authorize()
-authMiddleware -> validationMiddleware ++ : authorize('admin')
-validationMiddleware -> routerRestaurants -- : next()
-routerRestaurants -> controllersRestaurants ++ : router.delete('/:id',deleteRestaurant)
+routerRestaurants -> authMiddleware ++ : protect()
+authMiddleware -> routerRestaurants -- : next()
+routerRestaurants -> authMiddleware ++ : authorize('admin')
+authMiddleware -> routerRestaurants -- : next()
+routerRestaurants -> controllersRestaurants ++ : router.delete('/:id', deleteRestaurant)
 controllersRestaurants -> modelRestaurant ++ : deleteRestaurant(req.params.id)
 modelRestaurant -> RestaurantsDatabase ++ : RestaurantsSchema
 RestaurantsDatabase --> modelRestaurant -- : Deletion confirmation
