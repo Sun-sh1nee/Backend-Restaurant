@@ -1,0 +1,23 @@
+@startuml Restaurant System Use Case Diagram
+
+left to right direction
+
+actor "User" as user
+actor "Admin" as admin
+
+rectangle "Restaurant System" as ResSystem {
+    usecase "Register" as register
+    usecase "View\nRestaurants" as viewRestaurant
+    usecase "Manage\nReservation" as manageReservation
+    usecase "Manage\nRestaurant" as manageRestaurant
+}
+
+user -- register
+user -- viewRestaurant
+user -- manageReservation
+
+register -- admin
+manageReservation -- admin
+manageRestaurant -- admin
+
+@enduml

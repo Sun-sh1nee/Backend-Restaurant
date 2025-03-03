@@ -3,19 +3,46 @@ const Restaurant = require('../models/Restaurant');
 
 
 
-exports.getComments = async (req,res,next) => {
+exports.getComment = async (req,res,next) => {
     try {
-        const Comment = await Comment.findById({restaurant: req.params.id});
-        if(!Comment){
+        const Comments = await Comment.findById(req.params.id);
+        if(!Comments){
             return res.status(404).json({success: false , messsage: `no comment with theid of ${req.params.id}`});
         }
 
         res.status(200).json({
             success: true,
-            data: Comment
+            data: Comments
         });
     }catch (error){
-        // console.log(error);
+        return res.status(500).json({success:false , message:"get Comment error"});
+    }
+}
+
+exports.getComments = async (req,res,next) =>{
+    try {
+
+        const restaurant = await Restaurant.findById(req.params.restaurantId);
+
+        if(!restaurant){
+            return res.status(404).json({
+                success: false,
+                message: `No restaurant with the id of ${req.params.restaurantId}`
+            });
+        }
+        // console.log(restaurant);
+        const Comments = await Comment.find({restaurant: req.params.restaurantId});
+        if(!Comments){
+            return res.status(404).json({success: false });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: Comments
+        });
+
+    }catch (error){
+        console.log(error);
         return res.status(500).json({success:false , message:"get Comment error"});
     }
 }
@@ -26,8 +53,7 @@ exports.addComment = async (req,res,next) => {
        
         if(!req.params.restaurantId) req.params.restaurantId = req.body.restaurant;
         else{
-            req.body.restaurant = req.params.restaurantId;
-            
+            req.body.restaurant = req.params.restaurantId;  
         }
         const restaurant = await Restaurant.findById(req.params.restaurantId);
 
@@ -41,7 +67,7 @@ exports.addComment = async (req,res,next) => {
 
         req.body.user = req.user.id;
         const comment = await Comment.create(req.body);
-        res.status(200).json({
+        res.status(201).json({
             success: true,
             data: comment
         });
@@ -49,7 +75,7 @@ exports.addComment = async (req,res,next) => {
         // console.log(error);
         return res.status(500).json({
             success: false,
-            message: "Cannot create Commnet"
+            message: "Cannot create Comment"
         });
     }
 }

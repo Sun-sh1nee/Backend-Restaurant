@@ -6,7 +6,7 @@ const reservations = require('./routes/reservations');
 
 const comments = require('./routes/comments');
 
-const auth = require('./routes/authRoute');
+const auth = require('./routes/auth');
 // Load env vars
 dotenv.config({ path: './config/config.env' });
 
