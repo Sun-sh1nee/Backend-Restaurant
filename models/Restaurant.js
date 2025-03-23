@@ -1,3 +1,4 @@
+const req = require('express/lib/request');
 const mongoose = require('mongoose');
 
 const RestaurantSchema = new mongoose.Schema({
@@ -22,6 +23,10 @@ const RestaurantSchema = new mongoose.Schema({
     close_time: {
         type: String,
         required: [true, 'Please add a closing time']
+    },
+    image: {
+        type: [String],
+        required: [true, 'Please add Image']
     }
 }, {
     toJSON: { virtuals: true },
