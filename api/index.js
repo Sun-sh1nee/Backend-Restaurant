@@ -12,11 +12,11 @@ dotenv.config({ path: "./config/config.env" });
 
 
 
-app.use(cors());
 // Connect to MongoDB
 connectDB();
 
 const app = express();
+app.use(cors());
 
 // Middleware
 app.use(express.json());
