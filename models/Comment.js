@@ -6,6 +6,14 @@ const CommentSchema = new mongoose.Schema({
         ref: 'User',
         required:true
     },
+    imagesUser: {
+        type: String,
+        require: false
+    },
+    nameUser: {
+        type: String,
+        require: false
+    },
     restaurant:{
         type: mongoose.Schema.ObjectId,
         ref: 'Restaurant',

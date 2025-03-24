@@ -6,9 +6,13 @@ const reservations = require("../routes/reservations");
 const comments = require("../routes/comments");
 const auth = require("../routes/auth");
 const restaurants = require("../routes/restaurants");
+const cors = require("cors");
 
 dotenv.config({ path: "./config/config.env" });
 
+
+
+app.use(cors());
 // Connect to MongoDB
 connectDB();
 

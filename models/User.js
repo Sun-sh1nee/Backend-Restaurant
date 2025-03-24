@@ -33,6 +33,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add a telephone number']
     },
+    image: {
+        type: String,
+        require: false
+    },
 
     resetPasswordToken: String,
     resetPasswordExpire: Date,

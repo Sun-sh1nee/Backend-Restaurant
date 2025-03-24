@@ -27,6 +27,10 @@ const RestaurantSchema = new mongoose.Schema({
     image: {
         type: [String],
         required: [true, 'Please add Image']
+    },
+    description: {
+        type: String,
+        require: false
     }
 }, {
     toJSON: { virtuals: true },
