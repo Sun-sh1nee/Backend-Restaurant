@@ -19,7 +19,7 @@ const app = express();
 app.use(cors());
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 app.use(cookieParser());
 
 // Mount Routes
