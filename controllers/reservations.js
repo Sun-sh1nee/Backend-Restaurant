@@ -151,6 +151,14 @@ exports.updateReservation = async (req,res,next) =>{
                 message: `no Reservation with the id of ${req.params.id}`
             });
         }
+        const restaurant = await Restaurant.findById(reservation.restaurant);
+        if (!restaurant) {
+            return res.status(404).json({
+                success: false,
+                message: "Restaurant not found"
+            });
+        }
+
         const dateReq = new Date(req.body.reserDate);
 
         if (isNaN(dateReq)) {
@@ -210,7 +218,7 @@ exports.updateReservation = async (req,res,next) =>{
     }catch( error){
         return res.status(500).json({
             success: false ,
-            message:  error.message || "Cannot update Reservation"
+            message: "Cannot update Reservation"
         });
     }
 }
