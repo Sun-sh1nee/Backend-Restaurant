@@ -205,7 +205,14 @@ exports.updateReservation = async (req,res,next) =>{
             });
         }
 
-        const updatedData = { reserDate: dateReq }
+        const updatedData = { 
+            reserDate: dateReq
+        };
+        
+        if (req.body.nameUser !== undefined) {
+            updatedData.nameUser = req.body.nameUser;
+        }
+        
         reservation = await Reservation.findByIdAndUpdate(req.params.id, updatedData,{
             new: true,
             runValidators: true
