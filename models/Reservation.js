@@ -10,6 +10,10 @@ const ReservationSchema = new mongoose.Schema({
         ref: 'User',
         required:true
     },
+    nameUser: {
+        type: String,
+        require: true
+    },
     restaurant:{
         type: mongoose.Schema.ObjectId,
         ref: 'Restaurant',

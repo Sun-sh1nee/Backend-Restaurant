@@ -104,7 +104,6 @@ exports.addReservation = async (req,res,next) => {
         openTime.setHours(parseInt(openHour), parseInt(openMinute), 0, 0);
         closeTime.setHours(parseInt(closeHour), parseInt(closeMinute), 0, 0);
 
-        console.log(dateReq + '\n' + openTime + '\n' + closeTime + '\n' + (dateReq >= openTime) + '\n' + (dateReq <= closeTime));
         if (openHour < closeHour) {
             if(!(dateReq >= openTime && dateReq <= closeTime))
             return res.status(400).json({
@@ -152,11 +151,49 @@ exports.updateReservation = async (req,res,next) =>{
                 message: `no Reservation with the id of ${req.params.id}`
             });
         }
+        const dateReq = new Date(req.body.reserDate);
+
+        if (isNaN(dateReq)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid reservation time"
+            });
+        }
+
+        if(dateReq < Date.now()){
+            return res.status(400).json({
+                success: false,
+                message: "Can't Make Reservation in Past"
+            })
+        }
 
         if(reservation.user.toString() !== req.user.id && req.user.role !== 'admin'){
             return res.status(403).json({
                 success: false,
                 message: `User ${req.user.id} is not authorized to update this reservation`
+            });
+        }
+
+        const openTime = new Date(dateReq);
+        const closeTime = new Date(dateReq);
+
+        const [openHour, openMinute] = restaurant.open_time.split(":");
+        const [closeHour, closeMinute] = restaurant.close_time.split(":");
+        
+        openTime.setHours(parseInt(openHour), parseInt(openMinute), 0, 0);
+        closeTime.setHours(parseInt(closeHour), parseInt(closeMinute), 0, 0);
+
+        if (openHour < closeHour) {
+            if(!(dateReq >= openTime && dateReq <= closeTime))
+            return res.status(400).json({
+                success: false,
+                message: `Reservation time must be between ${restaurant.open_time} and ${restaurant.close_time}`
+            });
+        }else{
+            if(!(dateReq >= openTime || dateReq <= closeTime))
+            return res.status(400).json({
+                success: false,
+                message: `Reservation time must be between ${restaurant.open_time} and ${restaurant.close_time}`
             });
         }
 
