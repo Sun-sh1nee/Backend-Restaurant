@@ -197,7 +197,8 @@ exports.updateReservation = async (req,res,next) =>{
             });
         }
 
-        reservation = await Reservation.findByIdAndUpdate(req.params.id,req.body,{
+        const updatedData = { reserDate: dateReq }
+        reservation = await Reservation.findByIdAndUpdate(req.params.id, updatedData,{
             new: true,
             runValidators: true
         });
@@ -207,10 +208,9 @@ exports.updateReservation = async (req,res,next) =>{
         });
 
     }catch( error){
-        console.log(error);
         return res.status(500).json({
             success: false ,
-            message: "Cannot update Reservation"
+            message:  error.message || "Cannot update Reservation"
         });
     }
 }
